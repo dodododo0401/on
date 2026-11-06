@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>안티-쇼핑 · 구매 전 소비 진단</title>
+<style>
+:root{
+  --ink:#12233f; --ink-2:#1d3560; --cobalt:#2350d8; --bg:#edf1f6; --paper:#fff;
+  --line:#d3dbe6; --text:#19212e; --muted:#596579;
+  --rec:#11795a; --rec-bg:#e3f4ed; --think:#a85f00; --think-bg:#fcefd6; --no:#bb2d22; --no-bg:#fbe5e2;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{font-size:16px}
+body{margin:0;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word;
+  font-family:"Pretendard","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
+h1,h2,h3,p{margin:0}
+h1{font-size:1.6rem;line-height:1.3;letter-spacing:-.02em}
+h2{font-size:1.15rem;line-height:1.35;letter-spacing:-.01em}
+h3{font-size:1rem}
+button,input,select{font:inherit;color:inherit}
+.muted{color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{max-width:1040px;margin:0 auto;padding:0 18px}
+:focus-visible{outline:3px solid rgba(35,80,216,.45);outline-offset:2px}
+
+/* 버튼·입력 */
+.btn{border:1px solid #aebbcc;background:var(--paper);border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer;min-height:44px}
+.btn:hover{background:#f1f5f9}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.primary:hover{background:var(--ink-2)}
+.btn.danger{border-color:var(--no);color:var(--no)}
+.btn.danger.solid{background:var(--no);color:#fff}
+.btn.sm{min-height:34px;padding:4px 10px;font-size:.85rem}
+.linkbtn{border:0;background:none;color:var(--cobalt);font-weight:700;text-decoration:underline;cursor:pointer;padding:0}
+.field{display:flex;flex-direction:column;gap:6px}
+.field>label,.field>.lab{font-weight:700;font-size:.92rem}
+.field small{color:var(--muted)}
+input[type=text],input[type=password],input[type=number],input[type=date],select{
+  width:100%;min-height:44px;padding:9px 12px;border:1px solid #aebbcc;border-radius:6px;background:#fff}
+input[type=range]{width:100%}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:.92rem}
+.check input{margin-top:5px}
+.form-col{display:flex;flex-direction:column;gap:16px;margin-top:16px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.notice{padding:11px 14px;border-radius:8px;font-size:.92rem;border:1px solid}
+.notice.err{background:var(--no-bg);border-color:#efb7b1;color:#8f241b}
+.notice.ok{background:var(--rec-bg);border-color:#a9d9c6;color:#0d5b43}
+.notice.info{background:#e8eefb;border-color:#bccbee;color:#1f3f94;margin-bottom:16px}
+
+/* 인증 화면 */
+.auth-shell{min-height:100vh;display:grid;grid-template-columns:minmax(300px,5fr) 6fr}
+.auth-side{background:var(--ink);color:#fff;padding:56px 48px;display:flex;flex-direction:column;justify-content:space-between;gap:36px}
+.auth-side h2{font-size:1.9rem;line-height:1.35;letter-spacing:-.03em;margin:28px 0 14px;font-weight:800}
+.auth-side p{color:#c3d0e6}
+.vars{display:grid;gap:14px;margin:0}
+.vars div{border-top:1px solid rgba(255,255,255,.22);padding-top:10px}
+.vars dt{font-weight:800}
+.vars dd{margin:2px 0 0;color:#c3d0e6;font-size:.92rem}
+.auth-main{display:grid;place-items:center;padding:36px 20px}
+.auth-card{width:100%;max-width:420px}
+.auth-card h1{margin-bottom:6px}
+.tabs{display:flex;border-bottom:1px solid var(--line);margin:22px 0 4px}
+.tabs button{flex:1;border:0;background:none;padding:12px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--cobalt)}
+.fine{font-size:.82rem;color:var(--muted);margin-top:18px}
+.brandline{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.1rem}
+.mark{width:32px;height:32px;border-radius:8px;background:var(--cobalt);display:grid;place-items:center;flex:none}
+@media(max-width:820px){.auth-shell{grid-template-columns:1fr}.auth-side{padding:26px 20px}.auth-side h2{font-size:1.45rem;margin-top:18px}.vars{display:none}}
+
+/* 앱 셸 */
+.topbar{background:var(--ink);color:#fff}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:11px;padding-bottom:11px}
+.userbox{display:flex;align-items:center;gap:10px;font-size:.92rem}
+.userbox .btn{background:transparent;border-color:rgba(255,255,255,.45);color:#fff}
+.userbox .btn:hover{background:rgba(255,255,255,.12)}
+.nav{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.nav .wrap{display:flex;gap:2px;overflow-x:auto}
+.nav button{border:0;background:none;padding:14px 14px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent}
+.nav button[aria-current=page]{color:var(--ink);border-bottom-color:var(--cobalt)}
+.count{display:inline-block;min-width:20px;padding:0 6px;margin-left:6px;border-radius:10px;background:var(--no);color:#fff;font-size:.75rem;line-height:20px;text-align:center}
+main{padding:26px 0 56px}
+.page-head{margin-bottom:18px}
+.page-head p{margin-top:4px}
+.foot{padding:0 0 40px;color:var(--muted);font-size:.82rem}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:22px}
+.card+.card,.card+.diag-grid,.diag-grid+#more-slot{margin-top:18px}
+#more-slot>.card{margin-top:18px}
+
+/* 진단 */
+.diag-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+@media(max-width:820px){.diag-grid{grid-template-columns:1fr}.two{grid-template-columns:1fr}}
+#receipt-slot{scroll-margin-top:72px}
+.slot-empty{border:2px dashed #b4c0d1;border-radius:10px;padding:40px 24px;text-align:center;color:var(--muted);background:rgba(255,255,255,.5)}
+
+/* 영수증: 이 화면의 중심 요소 */
+.receipt{position:relative;background:#fff;padding:24px 22px 28px;margin-bottom:12px;box-shadow:0 6px 18px rgba(18,35,63,.12);
+  font-family:"D2Coding","Nanum Gothic Coding","Courier New",ui-monospace,monospace}
+.receipt::after{content:"";position:absolute;left:0;right:0;bottom:-8px;height:8px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8'%3E%3Cpath d='M0 0H16L8 8Z' fill='white'/%3E%3C/svg%3E") repeat-x}
+.r-head{text-align:center;border-bottom:2px dashed #9fb0c6;padding-bottom:12px}
+.r-head strong{display:block;font-size:1.05rem;letter-spacing:.02em}
+.r-head span{font-size:.8rem;color:var(--muted)}
+.r-prod{padding:12px 0;border-bottom:2px dashed #9fb0c6;font-size:.92rem}
+.r-prod b{display:block;font-size:1.02rem;word-break:break-all}
+.r-table{width:100%;border-collapse:collapse;font-size:.88rem}
+.r-table td{padding:9px 0;vertical-align:top;border-bottom:1px dotted #b4c0d1}
+.r-table .r-n{text-align:right;white-space:nowrap;font-weight:700;padding-left:12px;font-variant-numeric:tabular-nums}
+.r-table small{display:block;color:var(--muted);font-size:.78rem;line-height:1.45;margin-top:2px;font-family:"Pretendard","Noto Sans KR","Malgun Gothic",sans-serif}
+.r-sum{display:flex;justify-content:space-between;padding:10px 0 0;font-size:.9rem}
+.r-total{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:2px dashed #9fb0c6;margin-top:10px;padding-top:12px}
+.r-total .lab{display:block;font-size:.9rem}
+.r-total b{font-size:2.3rem;line-height:1;font-variant-numeric:tabular-nums}
+.stamp{flex:none;transform:rotate(-8deg);border:3px double currentColor;border-radius:6px;padding:4px 14px;
+  font-family:"Pretendard","Noto Sans KR","Malgun Gothic",sans-serif;font-weight:900;font-size:1.5rem;letter-spacing:.12em}
+.stamp.rec{color:var(--rec)}.stamp.think{color:var(--think)}.stamp.no{color:var(--no)}
+.verdict{padding:14px 16px;border-radius:8px;font-weight:600;margin-top:6px}
+.verdict.rec{background:var(--rec-bg);color:#0d5b43}.verdict.think{background:var(--think-bg);color:#7d4600}.verdict.no{background:var(--no-bg);color:#8f241b}
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-weight:800;font-size:.82rem}
+.badge.rec{background:var(--rec-bg);color:var(--rec)}.badge.think{background:var(--think-bg);color:var(--think)}.badge.no{background:var(--no-bg);color:var(--no)}
+
+/* 결과 하단 */
+.advice{margin:10px 0 0;padding-left:20px}
+.advice li+li{margin-top:8px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+@media(max-width:820px){.stats{grid-template-columns:1fr 1fr}}
+.stat{border:1px solid var(--line);border-radius:8px;padding:12px}
+.stat span{display:block;font-size:.8rem;color:var(--muted)}
+.stat b{display:block;font-size:1.15rem;margin:2px 0}
+.stat small{color:var(--muted);font-size:.78rem}
+.alts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+@media(max-width:820px){.alts{grid-template-columns:1fr}}
+.alt{border:1px solid var(--line);border-left:4px solid var(--cobalt);border-radius:8px;padding:14px}
+.alt h3{margin-bottom:6px}
+.alt p{font-size:.92rem}
+details>summary{cursor:pointer;font-weight:800;font-size:1.15rem}
+.decide{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.hold-pick{display:flex;gap:6px}
+.hold-pick select{width:auto}
+
+/* 목록·표 */
+.list{display:grid;gap:12px;margin-top:14px}
+.item{border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;gap:14px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.item.due{border-color:var(--think);background:#fffaf0}
+.item .meta{color:var(--muted);font-size:.88rem}
+.table-wrap{overflow-x:auto;margin-top:12px}
+table.data{width:100%;border-collapse:collapse;font-size:.92rem}
+table.data th,table.data td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+table.data th{font-size:.82rem;color:var(--muted);white-space:nowrap}
+table.data td.num{text-align:right;white-space:nowrap}
+.rowact{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.fbtn{border:1px solid #aebbcc;background:#fff;border-radius:14px;padding:2px 10px;font-size:.82rem;font-weight:700;cursor:pointer;min-height:30px}
+.fbtn[aria-pressed=true].sat{background:var(--rec-bg);border-color:var(--rec);color:var(--rec)}
+.fbtn[aria-pressed=true].reg{background:var(--no-bg);border-color:var(--no);color:var(--no)}
+.head-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.bar{height:12px;border-radius:6px;background:#e4eaf2;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--cobalt)}
+.empty{padding:28px 12px;text-align:center;color:var(--muted)}
+.big{font-size:2rem;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+
+/* 모달·토스트 */
+.modal-back{position:fixed;inset:0;background:rgba(10,20,40,.5);display:grid;place-items:center;padding:16px;z-index:50}
+.modal{background:#fff;border-radius:12px;padding:24px;width:100%;max-width:440px;max-height:92vh;overflow:auto}
+.modal h3{font-size:1.1rem;margin-bottom:14px}
+.modal form{display:flex;flex-direction:column;gap:14px}
+.confirm-msg{margin-bottom:18px;white-space:pre-line}
+.modal .actions{justify-content:flex-end}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:8px;
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:60;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){#toast{transition:none}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<noscript>이 서비스는 JavaScript가 필요합니다. 브라우저 설정에서 JavaScript를 켜 주세요.</noscript>
+
+<script>
+(function(){
+'use strict';
+
+/*LOGIC-START*/
+const CATEGORIES=['의류·패션','전자기기','문구·학용품','도서·교재','뷰티·생활용품','식품·간식','취미·게임','스포츠·레저','기타'];
+const MOTIVES=[
+  {k:'need',label:'꼭 필요하고 계획했던 구매',base:0},
+  {k:'replace',label:'고장·소모로 교체가 필요함',base:0},
+  {k:'sale',label:'세일·할인·이벤트 때문에',base:12},
+  {k:'sns',label:'SNS·광고·후기를 보고 갖고 싶어짐',base:14},
+  {k:'want',label:'뚜렷한 이유 없이 그냥 갖고 싶음',base:16},
+  {k:'stress',label:'스트레스 해소·기분 전환',base:18}
+];
+const FREQS=[
+  {k:'daily',label:'거의 매일 사용',ded:0,perYear:300},
+  {k:'weekly3',label:'주 3~6회',ded:3,perYear:180},
+  {k:'weekly1',label:'주 1~2회',ded:8,perYear:60},
+  {k:'monthly',label:'월 1~3회',ded:16,perYear:18},
+  {k:'rare',label:'거의 사용하지 않을 것 같음',ded:25,perYear:3}
+];
+const ACT_LABEL={daily:'거의 매일 사용',weekly3:'주 3~6회',weekly1:'주 1~2회',monthly:'월 1~3회',rare:'거의 사용하지 않음'};
+const USAGE_OPTS=['미기록'].concat(FREQS.map(x=>ACT_LABEL[x.k]));
+const USAGE_KEY={};FREQS.forEach(x=>{USAGE_KEY[ACT_LABEL[x.k]]=x.k;});
+const SENS_FACTOR=[0.6,0.8,1.0,1.2,1.4];
+const SENS_LABEL=['매우 낮음','낮음','보통','높음','매우 높음'];
+const CAT_TIPS={
+  '의류·패션':{use:'옷장·서랍 속 비슷한 옷과 코디를 3가지 이상 만들어 보고, 잘 입지 않는 옷이 왜 손이 안 가는지 먼저 점검해 보세요.',multi:'계절과 상황에 상관없이 여러 옷과 어울리는 기본 아이템(무채색, 기본 핏)을 고르면 구매 횟수를 줄일 수 있습니다.'},
+  '전자기기':{use:'저장공간 정리, 배터리·부품 교체, 설정 최적화, 간단한 수리로 기존 기기에서 해결되는지 먼저 확인해 보세요.',multi:'이미 가진 스마트폰·태블릿·노트북의 기능(메모, 녹음, 알람 등)으로 대체할 수 있는지 확인해 보세요.'},
+  '문구·학용품':{use:'서랍과 필통 속 미사용 재고를 모두 꺼내 목록으로 만들어 보세요. 재고를 다 쓰기 전에는 새로 사지 않는 규칙이 도움이 됩니다.',multi:'용도가 겹치는 문구(멀티 펜, 다용도 노트)로 여러 물품을 한 번에 대체할 수 있는지 확인해 보세요.'},
+  '도서·교재':{use:'학교·공공 도서관이나 전자도서관에서 먼저 대출해 보고, 소장 가치가 있을 때 구매하세요.',multi:'전자책 구독이나 친구와 돌려 보기처럼 공유 방식으로 해결할 수 있는지 확인해 보세요.'},
+  '뷰티·생활용품':{use:'집에 남은 제품의 양과 사용기한을 먼저 확인하고, 다 쓰기 전에는 새로 사지 않는 기준을 세워 보세요.',multi:'올인원 제품이나 이미 가진 도구로 같은 목적을 달성할 수 있는지 확인해 보세요.'},
+  '식품·간식':{use:'냉장고와 찬장에 남은 식재료·간식을 먼저 확인하고 소진 계획을 세워 보세요.',multi:'소분 구매나 공동구매로 필요한 만큼만 구입하면 낭비를 줄일 수 있습니다.'},
+  '취미·게임':{use:'이미 가진 게임·취미 용품 중 아직 사용하지 않은 것이 있는지 목록을 만들어 보세요.',multi:'구독·대여 서비스나 친구와의 공유로 일정 기간만 이용해 보세요.'},
+  '스포츠·레저':{use:'기존 장비의 상태를 점검하고 수선·세척·부품 교체로 충분한지 확인해 보세요.',multi:'대여나 체험 후에 구매를 결정하면 쓰지 않는 장비를 사는 일을 줄일 수 있습니다.'},
+  '기타':{use:'이미 가진 물건 중 같은 용도로 쓸 수 있는 것이 없는지 목록으로 먼저 확인해 보세요.',multi:'하나로 여러 용도를 충족하는 물건이 있는지, 빌리거나 공유할 수 있는지 확인해 보세요.'}
+};
+
+function fmtWon(n){return Math.round(n).toLocaleString('ko-KR')+'원';}
+function ymd(d){const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+function parseYmd(s){const a=String(s||'').split('-').map(Number);return new Date(a[0]||1970,(a[1]||1)-1,a[2]||1);}
+function startOfDay(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate());}
+
+function norm(s){return String(s||'').toLowerCase().replace(/[^0-9a-z가-힣]/g,'');}
+function bigrams(s){const n=norm(s);if(n.length<2)return n?[n]:[];const o=[];for(let i=0;i<n.length-1;i++)o.push(n.slice(i,i+2));return o;}
+function dice(a,b){
+  const A=bigrams(a),B=bigrams(b);if(!A.length||!B.length)return 0;
+  const m=new Map();A.forEach(x=>m.set(x,(m.get(x)||0)+1));
+  let inter=0;B.forEach(x=>{const c=m.get(x)||0;if(c>0){inter++;m.set(x,c-1);}});
+  return 2*inter/(A.length+B.length);
+}
+function tokens(s){return String(s||'').toLowerCase().split(/[\s\/\-_,()\[\]]+/).map(t=>t.replace(/[^0-9a-z가-힣]/g,'')).filter(t=>t.length>=2);}
+function jaccard(a,b){
+  const A=new Set(tokens(a)),B=new Set(tokens(b));if(!A.size||!B.size)return 0;
+  let i=0;A.forEach(x=>{if(B.has(x))i++;});return i/(A.size+B.size-i);
+}
+function similarity(a,b){return Math.max(dice(a,b),jaccard(a,b));}
+
+function collectKnown(data,skip){
+  const seen=new Set(),out=[];
+  const push=it=>{const k=norm(it.name)+'|'+it.category;if(seen.has(k))return;seen.add(k);out.push({name:it.name,category:it.category});};
+  data.owned.forEach(o=>{if(!(skip&&norm(o.name)===norm(skip.name)&&o.category===skip.category))push(o);});data.purchases.forEach(p=>{if(!(skip&&p.id===skip.id))push(p);});
+  return out;
+}
+function regretStat(data,cat){
+  const rec=data.purchases.filter(p=>p.category===cat&&(p.feedback==='satisfied'||p.feedback==='regret'));
+  const n=rec.length,r=rec.filter(p=>p.feedback==='regret').length;
+  let add=0;if(n>=2&&r/n>=0.5)add=6;else if(r>0)add=3;
+  return {n,r,add,rate:n?r/n:0};
+}
+
+function evaluate(inp,data,now){
+  now=now||new Date();
+  const st=data.settings;
+  /* 1) 중복성 */
+  const known=collectKnown(data,inp.prior);
+  let best={s:0,item:null},sameCat=0;
+  known.forEach(it=>{
+    const s=similarity(inp.name,it.name);
+    if(s>best.s)best={s:s,item:it};
+    if(it.category===inp.category)sameCat++;
+  });
+  const catDed=Math.min(sameCat*2,6);
+  let simDed=0;
+  if(best.s>=0.6)simDed=25;
+  else if(best.s>=0.4)simDed=18;
+  else if(best.s>=0.25)simDed=(best.item.category===inp.category)?12:6;
+  let dup=Math.max(catDed,simDed);
+  let dupWhy;
+  if(simDed>0&&simDed>=catDed)dupWhy="'"+best.item.name+"'과(와) 제품명 유사도 "+Math.round(best.s*100)+"%"+(best.item.category===inp.category?' (같은 분류)':' (다른 분류)');
+  else if(catDed>0)dupWhy="같은 분류('"+inp.category+"')의 보유·구매 물품 "+sameCat+"개 (개당 2점, 최대 6점)";
+  else dupWhy='유사한 보유·구매 물품이 확인되지 않음';
+  /* 비슷한 제품 구매 경험(직접 입력 또는 구매내역에 기록된 실제 사용 빈도) */
+  let prior=inp.prior||null;
+  if(!prior&&best.item&&best.s>=0.4){
+    const bp=data.purchases.find(p=>p.usage&&p.category===best.item.category&&norm(p.name)===norm(best.item.name));
+    if(bp)prior={name:bp.name,price:bp.price,freq:bp.usage,auto:true};
+  }
+  const pfq=prior?(FREQS.find(x=>x.k===prior.freq)||FREQS[2]):null;
+  if(prior){
+    const pd=pfq.ded>=16?25:18;
+    const cmp=prior.price>0?' / 이번 가격은 이전 구매가 '+fmtWon(prior.price)+'의 '+Math.round(inp.price/prior.price*100)+'%':'';
+    if(pd>dup){dup=pd;dupWhy="비슷한 제품 '"+prior.name+"'을(를) 이미 구매한 적 있음"+(pfq.ded>=16?' — 실제 사용 빈도가 낮아 중복 부담이 큼':'')+cmp;}
+    else dupWhy+=" / 비슷한 제품 '"+prior.name+"' 구매 이력 있음"+cmp;
+  }
+
+  /* 2) 충동성 */
+  const m=MOTIVES.find(x=>x.k===inp.motive)||MOTIVES[0];
+  const sens=Math.min(5,Math.max(1,st.sensitivity||3));
+  const factor=SENS_FACTOR[sens-1];
+  let imp=Math.round(m.base*factor);
+  const impParts=[];
+  if(m.base>0)impParts.push("구매 동기 '"+m.label+"' "+m.base+"점 × 민감도 "+sens+"단계(×"+factor.toFixed(1)+") = "+imp+"점");
+  else impParts.push("구매 동기 '"+m.label+"' → 0점");
+  const hr=now.getHours();
+  if(m.base>0&&(hr>=22||hr<5)){imp+=3;impParts.push('심야(22시~05시) 결정 +3점');}
+  const rg=regretStat(data,inp.category);
+  if(rg.add>0){imp+=rg.add;impParts.push("'"+inp.category+"' 후회 이력 "+rg.r+"/"+rg.n+"건 → +"+rg.add+"점");}
+  if(imp>25){imp=25;impParts.push('(최대 25점 적용)');}
+
+  /* 3) 사용 빈도 */
+  const f=FREQS.find(x=>x.k===inp.freq)||FREQS[2];
+  let use=f.ded;let perYearEff=f.perYear;
+  const useParts=["예상 사용 빈도 '"+f.label+"' → "+f.ded+"점"];
+  if(prior){
+    const blended=Math.round(f.ded*0.35+pfq.ded*0.65);
+    perYearEff=Math.max(1,Math.round(f.perYear*0.35+pfq.perYear*0.65));
+    useParts.push("비슷한 제품 '"+prior.name+"'의 실제 사용 빈도 '"+ACT_LABEL[pfq.k]+"'("+pfq.ded+"점)를 65% 반영 → "+blended+"점");
+    use=blended;
+  }
+  const today=startOfDay(now);
+  const recent=data.purchases.filter(p=>{
+    if(p.category!==inp.category)return false;
+    const diff=(today-parseYmd(p.date))/86400000;
+    return diff>=0&&diff<=30;
+  }).length;
+  if(recent>0){const add=Math.min(recent*4,8);use=Math.min(25,use+add);useParts.push('최근 30일 내 같은 분류 구매 '+recent+'회 → +'+add+'점');}
+
+  /* 4) 예산 적합성 */
+  const budget=st.budget||0;
+  const monthSpent=data.purchases.reduce((a,p)=>{
+    const d=parseYmd(p.date);
+    return(d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth())?a+(+p.price||0):a;
+  },0);
+  const after=monthSpent+inp.price;
+  const ratio=budget>0?after/budget:0;
+  let bud=0,budWhy;
+  if(budget>0){
+    bud=ratio<=0.5?0:ratio<=0.7?5:ratio<=0.9?12:ratio<=1?18:25;
+    budWhy='이번 달 지출 '+fmtWon(monthSpent)+' + 이 제품 '+fmtWon(inp.price)+' = '+fmtWon(after)+' (월 예산 '+fmtWon(budget)+'의 '+Math.round(ratio*100)+'%)';
+  }else budWhy='월 예산이 설정되지 않아 반영하지 않음 (소비 리포트·설정에서 입력)';
+
+  const items=[
+    {key:'dup',title:'중복성',ded:dup,max:25,reason:dupWhy},
+    {key:'imp',title:'충동성',ded:imp,max:25,reason:impParts.join(' / ')},
+    {key:'use',title:'사용 빈도',ded:use,max:25,reason:useParts.join(' / ')},
+    {key:'bud',title:'예산 적합성',ded:bud,max:25,reason:budWhy}
+  ];
+  const sum=items.reduce((a,x)=>a+x.ded,0);
+  const total=Math.max(0,100-sum);
+  const badge=total>=75?{key:'rec',label:'추천'}:total>=50?{key:'think',label:'고민'}:{key:'no',label:'비추천'};
+
+  /* 맞춤 조언 (점수 구간·감점 항목별 문구) */
+  const adviceFor={
+    dup:()=>prior?("이미 비슷한 '"+prior.name+"'을(를) "+fmtWon(prior.price)+"에 구매했고 실제 사용 빈도는 '"+ACT_LABEL[pfq.k]+"'입니다. 새로 사기 전에 그 제품을 더 활용할 방법이 있는지, 이번 구매가 꼭 필요한 이유가 무엇인지 먼저 확인해 보세요."):best.item&&best.s>=0.25
+      ?"이미 비슷한 '"+best.item.name+"'을(를) 보유하거나 구매한 이력이 있습니다. 새 제품이 꼭 필요한 이유를 한 문장으로 적을 수 있는지 먼저 확인해 보세요."
+      :"같은 분류의 물품을 이미 "+sameCat+"개 가지고 있습니다. 새로 사기 전에 기존 물품의 사용 상태를 먼저 점검해 보세요.",
+    imp:()=>({
+      sale:"할인율이 아니라 '정가였어도 샀을까?'를 기준으로 판단해 보세요. 할인은 필요 없는 물건을 사게 만드는 대표적인 계기입니다.",
+      sns:"광고와 후기는 구매 욕구를 높이도록 만들어져 있습니다. 24시간 뒤에도 같은 마음인지 쿨링오프 보관함으로 확인해 보세요.",
+      want:"뚜렷한 이유가 없는 구매는 후회로 이어질 가능성이 높습니다. 쿨링오프 보관함에 넣고 시간을 두고 다시 판단해 보세요.",
+      stress:"기분 전환이 목적이라면 구매 외의 방법(산책, 운동, 대화)을 먼저 시도해 보세요."
+    }[m.k]||'구매 동기와 후회 이력을 함께 고려하여 신중히 결정해 보세요.')+((hr>=22||hr<5)&&m.base>0?' 심야 시간대의 결정은 충동적일 가능성이 높습니다.':''),
+    use:()=>"예상 사용 빈도가 낮습니다. 1년간 사용한다고 가정하면 1회 사용당 약 "+fmtWon(inp.price/perYearEff)+"입니다. 이 비용이 납득되는지 따져 보세요.",
+    bud:()=>budget>0?"이번 달 예산의 약 "+Math.round(ratio*100)+"%를 쓰게 됩니다. 이번 달에 꼭 필요한 다른 지출이 남아 있는지 확인해 보세요.":''
+  };
+  const comments=items.filter(x=>x.ded>0).sort((a,b)=>b.ded-a.ded).slice(0,2).map(x=>adviceFor[x.key]()).filter(Boolean);
+  if(!comments.length)comments.push('감점 요인이 거의 없습니다. 계획된 구매라면 진행해도 좋습니다.');
+
+  const verdict=badge.key==='rec'?'중복·충동·사용 빈도·예산 모두에서 큰 문제가 발견되지 않았습니다. 구매를 고려해도 좋습니다.'
+    :badge.key==='think'?'일부 항목에서 감점이 있습니다. 쿨링오프 보관함에 넣어 시간을 두고 다시 판단해 보는 것을 권장합니다.'
+    :'감점 요인이 큽니다. 구매를 보류하고 아래 대안을 먼저 확인하는 것을 권장합니다.';
+
+  return {
+    input:inp,total:total,sum:sum,badge:badge,items:items,best:best,sameCat:sameCat,
+    monthSpent:monthSpent,after:after,ratio:ratio,comments:comments,verdict:verdict,
+    hours:st.hourly>0?inp.price/st.hourly:null,
+    goalPct:st.goalAmount>0?inp.price/st.goalAmount*100:null,
+    perUse:Math.round(inp.price/perYearEff),perYear:perYearEff,
+    ctx:{salary:st.salary,hourly:st.hourly,goalName:st.goalName,goalAmount:st.goalAmount,budget:budget},
+    at:now.getTime()
+  };
+}
+
+function buildAlternatives(inp,res){
+  const tip=CAT_TIPS[inp.category]||CAT_TIPS['기타'];
+  const useText=(res.best.item&&res.best.s>=0.25)
+    ?"이미 '"+res.best.item.name+"'을(를) 보유하거나 구매한 이력이 있습니다. 새 제품으로 해결해야 하는 이유를 먼저 적어 보세요. "+tip.use
+    :tip.use;
+  const target=Math.max(100,Math.round(inp.price*0.7/100)*100);
+  const cheapText='중고 거래·대여·공동구매를 먼저 확인하고, 신품 가격의 약 70% 수준인 '+fmtWon(target)+' 이하의 선택지가 있을 때만 구매를 검토하세요. 시즌이 끝난 뒤 할인 시점까지 구매를 미루는 것도 방법입니다. (참고용 기준이며 실제 시세와 다를 수 있습니다.)';
+  return [
+    {key:'use',title:'기존 보유품 활용',text:useText},
+    {key:'cheap',title:'가성비 대체 방안',text:cheapText},
+    {key:'multi',title:'다목적 대체 방안',text:tip.multi}
+  ];
+}
+/*LOGIC-END*/
+
+/* ===== 저장소 ===== */
+const mem={};
+const USERS_KEY='antishop_users_v1',DATA_PREFIX='antishop_data_v1_',SESSION_KEY='antishop_session_v1';
+let storageOk=true;
+try{localStorage.setItem('__t','1');localStorage.removeItem('__t');}catch(e){storageOk=false;}
+/* persist: 'cloud'(Claude 계정에 서버 저장) | 'local'(브라우저 저장) | 'memory'(새로고침 시 소실) */
+let persist=storageOk?'local':'memory';
+let remote=null;const pending={};
+const isSyncKey=k=>k===USERS_KEY||k===SESSION_KEY||k.indexOf(DATA_PREFIX)===0;
+function remoteWrite(k,fn){
+  if(!remote||!isSyncKey(k))return;
+  pending[k]=(pending[k]||Promise.resolve()).then(fn).catch(e=>{try{console.warn('sync fail',k,e);}catch(_){}});
+}
+const store={
+  get(k){
+    if(mem[k]!==undefined)return mem[k];
+    try{return localStorage.getItem(k);}catch(e){return null;}
+  },
+  set(k,v){
+    mem[k]=v;
+    try{localStorage.setItem(k,v);}catch(e){}
+    remoteWrite(k,()=>remote.doc(k).set({v:v,t:Date.now()}));
+  },
+  del(k){
+    delete mem[k];
+    try{localStorage.removeItem(k);}catch(e){}
+    remoteWrite(k,()=>remote.doc(k).delete());
+  }
+};
+/* Claude 계정에 연결된 서버 저장소를 불러온다 (없으면 브라우저 저장으로 계속) */
+async function initPersistence(){
+  try{
+    if(!(window.claude&&window.claude.use))return;
+    const guard=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),10000));
+    await Promise.race([(async()=>{
+      const user=await window.claude.use('user'),db=await window.claude.use('db');
+      if(!user||!db)return;
+      const uid=await user.id();if(!uid)return;
+      const col=db.collection('data/users/'+uid+'/kv');
+      const snap=await col.get();
+      const seen={};
+      snap.docs.forEach(d=>{
+        const v=(d.data()||{}).v;
+        if(typeof v==='string'){seen[d.id]=1;mem[d.id]=v;try{localStorage.setItem(d.id,v);}catch(e){}}
+      });
+      remote=col;persist='cloud';
+      /* 이 기기 브라우저에만 있던 기존 계정·데이터는 서버로 옮긴다 */
+      try{
+        for(let i=0;i<localStorage.length;i++){
+          const k=localStorage.key(i);
+          if(k&&isSyncKey(k)&&!seen[k]&&k!==SESSION_KEY){const v=localStorage.getItem(k);if(v!=null)remoteWrite(k,()=>remote.doc(k).set({v:v,t:Date.now()}));}
+        }
+      }catch(e){}
+    })(),guard]);
+  }catch(e){try{console.warn('persistence init failed',e);}catch(_){}}
+}
+function loadUsers(){try{return JSON.parse(store.get(USERS_KEY)||'{}')||{};}catch(e){return {};}}
+function saveUsers(u){store.set(USERS_KEY,JSON.stringify(u));}
+function setSession(id,remember){
+  clearSession();
+  if(remember)store.set(SESSION_KEY,id);
+  else{try{sessionStorage.setItem(SESSION_KEY,id);}catch(e){}state.tmpSession=id;}
+}
+function getSession(){
+  let v=null;try{v=sessionStorage.getItem(SESSION_KEY);}catch(e){}
+  return v||state.tmpSession||store.get(SESSION_KEY)||null;
+}
+function clearSession(){
+  try{sessionStorage.removeItem(SESSION_KEY);}catch(e){}
+  state.tmpSession=null;
+  store.del(SESSION_KEY);
+}
+function defaultData(){
+  return {settings:{sensitivity:3,budget:300000,salary:2156880,hourly:10320,goalName:'',goalAmount:0},owned:[],purchases:[],holds:[],saved:[]};
+}
+function loadData(id){
+  let raw=null;
+  try{raw=JSON.parse(store.get(DATA_PREFIX+id)||'null');}catch(e){}
+  const d=defaultData();
+  if(raw){
+    const rs=raw.settings||{};
+    d.settings=Object.assign(d.settings,rs);
+    if(rs.salary==null&&rs.hourly>0)d.settings.salary=Math.round(rs.hourly*209);
+    ['owned','purchases','holds','saved'].forEach(k=>{if(Array.isArray(raw[k]))d[k]=raw[k];});
+  }
+  d.settings.hourly=Math.round((d.settings.salary||0)/209);
+  d.ownedSynced=!!(raw&&raw.ownedSynced);
+  if(!d.ownedSynced){d.purchases.forEach(p=>ensureOwned(d,p.name,p.category));d.ownedSynced=true;}
+  return d;
+}
+function ensureOwned(d,name,cat){
+  if(d.owned.some(o=>norm(o.name)===norm(name)&&o.category===cat))return false;
+  d.owned.push({id:newId(),name:name,category:cat,addedAt:Date.now()});return true;
+}
+function saveData(){store.set(DATA_PREFIX+state.user.id,JSON.stringify(state.data));}
+
+/* ===== 비밀번호 해시 ===== */
+const hasSubtle=!!(window.crypto&&window.crypto.subtle);
+function toHex(buf){return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+function randomSalt(){
+  const a=new Uint8Array(16);
+  if(window.crypto&&window.crypto.getRandomValues)window.crypto.getRandomValues(a);
+  else for(let i=0;i<a.length;i++)a[i]=Math.floor(Math.random()*256);
+  return toHex(a);
+}
+async function hashPw(pw,salt,algo){
+  if(algo==='pbkdf2'){
+    if(!hasSubtle)throw new Error('no-subtle');
+    const enc=new TextEncoder();
+    const key=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']);
+    const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:enc.encode(salt),iterations:100000,hash:'SHA-256'},key,256);
+    return toHex(bits);
+  }
+  let h=5381;const s=salt+pw;
+  for(let i=0;i<s.length;i++){h=((h<<5)+h)^s.charCodeAt(i);h|=0;}
+  return 'f'+(h>>>0).toString(16);
+}
+
+/* ===== 공통 도구 ===== */
+const state={user:null,data:null,view:'diagnose',lastResult:null,prefill:null,modal:null,confirm:null,lock:{}};
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>Array.from((r||document).querySelectorAll(s));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let idSeq=0;
+const newId=()=>Date.now().toString(36)+(idSeq++).toString(36)+Math.random().toString(36).slice(2,6);
+let toastTimer;
+function toast(msg){
+  const t=$('#toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3400);
+}
+function fmtDateTime(ms){return new Date(ms).toLocaleString('ko-KR',{month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+function fmtRemain(ms){
+  if(ms<=0)return '기한 도래';
+  const m=Math.floor(ms/60000),h=Math.floor(m/60),d=Math.floor(h/24);
+  if(d>=1)return d+'일 '+(h%24)+'시간';
+  if(h>=1)return h+'시간 '+(m%60)+'분';
+  return m>=1?m+'분':'1분 미만';
+}
+const LOGO='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M6 18L18 6"/></svg>';
+const optHtml=(arr,sel,fv,ft)=>arr.map(o=>{const v=fv(o),t=ft(o);return '<option value="'+esc(v)+'"'+(v===sel?' selected':'')+'>'+esc(t)+'</option>';}).join('');
+const catOpts=sel=>optHtml(CATEGORIES,sel,c=>c,c=>c);
+
+/* ===== 인증 화면 ===== */
+function renderAuth(mode,opts){
+  opts=opts||{};
+  state.user=null;state.data=null;state.lastResult=null;
+  const login=mode!=='signup';
+  $('#app').innerHTML=
+  '<div class="auth-shell">'+
+   '<aside class="auth-side"><div>'+
+     '<div class="brandline"><span class="mark">'+LOGO+'</span>안티-쇼핑</div>'+
+     '<h2>결제하기 전에,<br>한 번 더 계산합니다.</h2>'+
+     '<p>구매를 고민하는 물건의 정보를 입력하면 네 가지 기준으로 100점 만점의 구매 적합도를 계산하고, 감점 이유를 영수증처럼 공개합니다.</p>'+
+   '</div>'+
+   '<dl class="vars">'+
+     '<div><dt>중복성</dt><dd>이미 비슷한 물건을 갖고 있지는 않은가</dd></div>'+
+     '<div><dt>충동성</dt><dd>할인·광고·기분 때문에 사려는 것은 아닌가</dd></div>'+
+     '<div><dt>사용 빈도</dt><dd>산 뒤에 실제로 얼마나 쓸 것인가</dd></div>'+
+     '<div><dt>예산 적합성</dt><dd>이번 달 예산 안에서 감당할 수 있는가</dd></div>'+
+   '</dl></aside>'+
+   '<section class="auth-main"><div class="auth-card">'+
+     '<h1>'+(login?'로그인':'회원가입')+'</h1>'+
+     '<p class="muted">'+(login?'가입한 계정으로 로그인해야 서비스를 이용할 수 있습니다.':'계정을 만든 뒤 로그인하면 서비스를 이용할 수 있습니다.')+'</p>'+
+     '<div class="tabs" role="tablist">'+
+       '<button role="tab" aria-selected="'+login+'" data-action="auth-tab" data-mode="login">로그인</button>'+
+       '<button role="tab" aria-selected="'+!login+'" data-action="auth-tab" data-mode="signup">회원가입</button>'+
+     '</div>'+
+     (opts.notice?'<div class="notice ok" style="margin-top:14px">'+esc(opts.notice)+'</div>':'')+
+     (persist==='memory'?'<div class="notice err" style="margin-top:14px">이 환경에서는 저장이 제한되어 있어 페이지를 새로고침하면 계정과 데이터가 사라집니다.</div>':'')+
+     (login?
+      '<form data-form="login" class="form-col" novalidate>'+
+        '<div class="field"><label for="a-uid">아이디</label><input id="a-uid" name="uid" type="text" autocomplete="username" maxlength="20" value="'+esc(opts.uid||'')+'"></div>'+
+        '<div class="field"><label for="a-pw">비밀번호</label><input id="a-pw" class="pw" name="pw" type="password" autocomplete="current-password"></div>'+
+        '<label class="check"><input type="checkbox" data-action="toggle-pw"> 비밀번호 보이기</label>'+
+        '<label class="check"><input type="checkbox" name="remember"> 이 기기에서 로그인 상태 유지</label>'+
+        '<div class="notice err" id="auth-err" hidden></div>'+
+        '<button class="btn primary" type="submit">로그인</button>'+
+      '</form>'
+      :
+      '<form data-form="signup" class="form-col" novalidate>'+
+        '<div class="field"><label for="a-uid">아이디</label><input id="a-uid" name="uid" type="text" autocomplete="username" maxlength="20"><small>영문 소문자·숫자·밑줄(_) 4~20자</small></div>'+
+        '<div class="field"><label for="a-nick">닉네임</label><input id="a-nick" name="nick" type="text" maxlength="12" autocomplete="nickname"><small>화면에 표시되는 이름 (2~12자)</small></div>'+
+        '<div class="field"><label for="a-pw">비밀번호</label><input id="a-pw" class="pw" name="pw" type="password" autocomplete="new-password"><small>6자 이상, 영문과 숫자를 모두 포함</small></div>'+
+        '<div class="field"><label for="a-pw2">비밀번호 확인</label><input id="a-pw2" class="pw" name="pw2" type="password" autocomplete="new-password"></div>'+
+        '<label class="check"><input type="checkbox" data-action="toggle-pw"> 비밀번호 보이기</label>'+
+        '<label class="check"><input type="checkbox" name="agree"> '+(persist==='cloud'?'계정과 데이터가 내 Claude 계정에 연결되어 저장되며, 다음에 다시 열어도 유지됨을 확인했습니다.':'계정과 데이터는 현재 사용 중인 기기의 브라우저에만 저장되며, 다른 기기에서는 사용할 수 없음을 확인했습니다.')+'</label>'+
+        '<div class="notice err" id="auth-err" hidden></div>'+
+        '<button class="btn primary" type="submit">회원가입</button>'+
+      '</form>')+
+     '<p class="fine">비밀번호는 암호화(해시)하여 저장됩니다.'+(persist==='cloud'?' 저장된 정보는 본인 Claude 계정에서만 불러올 수 있습니다.':' 입력한 소비 정보는 외부로 전송되지 않습니다.')+'</p>'+
+   '</div></section>'+
+  '</div>';
+  const first=$('#a-uid');if(first&&!opts.uid)first.focus();else if(opts.uid&&$('#a-pw'))$('#a-pw').focus();
+}
+function authErr(msg){const e=$('#auth-err');if(!e)return;e.textContent=msg;e.hidden=false;}
+
+const forms={};
+forms.signup=async f=>{
+  const uid=f.elements.uid.value.trim().toLowerCase(),nick=f.elements.nick.value.trim();
+  const pw=f.elements.pw.value,pw2=f.elements.pw2.value;
+  if(!/^[a-z0-9_]{4,20}$/.test(uid))return authErr('아이디는 영문 소문자·숫자·밑줄(_) 4~20자로 입력해 주세요.');
+  if(nick.length<2||nick.length>12)return authErr('닉네임은 2~12자로 입력해 주세요.');
+  if(pw.length<6||!/[A-Za-z]/.test(pw)||!/[0-9]/.test(pw))return authErr('비밀번호는 6자 이상이며 영문과 숫자를 모두 포함해야 합니다.');
+  if(pw!==pw2)return authErr('비밀번호 확인이 일치하지 않습니다.');
+  if(!f.elements.agree.checked)return authErr('저장 방식 안내를 확인하고 체크해 주세요.');
+  const users=loadUsers();
+  if(users[uid])return authErr('이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요.');
+  const salt=randomSalt(),algo=hasSubtle?'pbkdf2':'simple';
+  let hash;try{hash=await hashPw(pw,salt,algo);}catch(e){return authErr('비밀번호 처리 중 문제가 발생했습니다. 다시 시도해 주세요.');}
+  users[uid]={id:uid,nick:nick,salt:salt,algo:algo,hash:hash,createdAt:Date.now()};
+  saveUsers(users);
+  setSession(uid,true);
+  enterApp(uid,true);
+};
+forms.login=async f=>{
+  const uid=f.elements.uid.value.trim().toLowerCase(),pw=f.elements.pw.value;
+  if(!uid||!pw)return authErr('아이디와 비밀번호를 입력해 주세요.');
+  const lk=state.lock[uid];
+  if(lk&&lk.until>Date.now())return authErr('로그인 시도가 너무 많습니다. '+Math.ceil((lk.until-Date.now())/1000)+'초 후 다시 시도해 주세요.');
+  const u=loadUsers()[uid];
+  let ok=false;
+  if(u){try{ok=(await hashPw(pw,u.salt,u.algo))===u.hash;}catch(e){ok=false;}}
+  if(!ok){
+    const l=state.lock[uid]||{n:0,until:0};l.n++;
+    if(l.n>=5){l.until=Date.now()+30000;l.n=0;}
+    state.lock[uid]=l;
+    return authErr('아이디 또는 비밀번호가 올바르지 않습니다.');
+  }
+  delete state.lock[uid];
+  setSession(uid,f.elements.remember.checked);
+  enterApp(uid,true);
+};
+
+/* ===== 앱 셸 ===== */
+function enterApp(id,fresh){
+  const u=loadUsers()[id];
+  if(!u){clearSession();renderAuth('login');return;}
+  state.user=u;state.data=loadData(id);state.view='diagnose';state.lastResult=null;
+  renderShell();
+  if(fresh){
+    const due=dueHolds().length;
+    toast(u.nick+'님, 환영합니다.'+(due?' 기한이 지난 보관 물품이 '+due+'개 있습니다.':''));
+  }
+}
+function renderShell(){
+  $('#app').innerHTML=
+  '<header class="topbar"><div class="wrap">'+
+    '<div class="brandline"><span class="mark">'+LOGO+'</span>안티-쇼핑</div>'+
+    '<div class="userbox"><span><strong>'+esc(state.user.nick)+'</strong>님</span><button class="btn sm" data-action="logout">로그아웃</button></div>'+
+  '</div></header>'+
+  '<nav class="nav" aria-label="주요 메뉴"><div class="wrap">'+
+    '<button data-action="nav" data-view="diagnose">구매 진단</button>'+
+    '<button data-action="nav" data-view="holds">쿨링오프 보관함<span class="count" id="hold-count" hidden></span></button>'+
+    '<button data-action="nav" data-view="data">내 데이터</button>'+
+    '<button data-action="nav" data-view="report">소비 리포트·설정</button>'+
+  '</div></nav>'+
+  '<main><div class="wrap" id="view"></div></main>'+
+  '<footer class="foot"><div class="wrap">본 진단은 입력한 정보를 바탕으로 한 규칙 기반 판단이며 참고용입니다. 최종 구매 결정은 이용자 본인에게 있으며, 모든 정보는 현재 기기의 브라우저에만 저장됩니다.</div></footer>';
+  showView(state.view);
+}
+function showView(v){
+  state.view=v;
+  $$('.nav button').forEach(b=>{if(b.dataset.view===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+  ({diagnose:renderDiagnose,holds:renderHolds,data:renderData,report:renderReport}[v])();
+  updateHoldCount();
+  window.scrollTo(0,0);
+}
+function dueHolds(){const n=Date.now();return state.data.holds.filter(h=>h.dueAt<=n);}
+function updateHoldCount(){
+  const c=$('#hold-count');if(!c)return;
+  const n=dueHolds().length;c.textContent=n;c.hidden=n===0;
+}
+
+/* ===== 구매 진단 ===== */
+function quickHtml(s){
+  const unset=!(s.salary>0)||!(s.budget>0)||!(s.goalAmount>0);
+  return '<details class="card" style="margin-bottom:16px"'+(unset?' open':'')+'><summary style="cursor:pointer;font-weight:700">내 월급 · 예산 · 저축 목표'+(unset?' <span class="muted" style="font-weight:400">(입력하면 진단이 더 정확해져요)</span>':'')+'</summary>'+
+  '<form data-form="quick" class="form-col" novalidate style="margin-top:12px">'+
+   '<div class="two"><div class="field"><label for="q-salary">내 월급(원)</label><input id="q-salary" name="salary" type="number" min="0" step="10000" value="'+s.salary+'"><small>시급 환산은 월 209시간 기준으로 자동 계산됩니다.</small></div>'+
+   '<div class="field"><label for="q-budget">월 소비 예산(원)</label><input id="q-budget" name="budget" type="number" min="0" step="1000" value="'+s.budget+'"></div></div>'+
+   '<div class="two"><div class="field"><label for="q-gname">저축 목표 이름</label><input id="q-gname" name="gname" type="text" maxlength="30" value="'+esc(s.goalName)+'" placeholder="예) 여행 경비"></div>'+
+   '<div class="field"><label for="q-gamt">저축 목표 금액(원)</label><input id="q-gamt" name="gamt" type="number" min="0" step="1000" value="'+s.goalAmount+'"></div></div>'+
+   '<div class="notice err" id="q-err" hidden></div>'+
+   '<div class="actions"><button class="btn primary" type="submit">저장</button></div></form></details>';
+}
+function renderDiagnose(){
+  const d=state.data,pf=state.prefill;state.prefill=null;
+  const empty=!d.owned.length&&!d.purchases.length;
+  $('#view').innerHTML=
+  '<div class="page-head"><h1>구매 전 진단</h1><p class="muted">사려는 물건의 정보를 입력하면 4대 변수로 구매 적합도를 계산해 영수증 형태로 보여 줍니다.</p></div>'+
+  (empty?'<div class="notice info">등록된 보유 물품과 구매 내역이 없어 중복성·예산 진단이 부정확할 수 있습니다. <button class="linkbtn" data-action="nav" data-view="data">내 데이터</button>에서 등록하거나 예시 데이터를 불러와 보세요.</div>':'')+
+  quickHtml(d.settings)+
+  '<div class="diag-grid">'+
+    '<section class="card"><h2>구매를 고민하는 제품</h2>'+
+    '<form data-form="diagnose" class="form-col" novalidate>'+
+      '<div class="field"><label for="d-name">제품명</label><input id="d-name" name="pname" type="text" maxlength="60" placeholder="예) 블루투스 무선 이어폰" autocomplete="off"></div>'+
+      '<div class="two">'+
+        '<div class="field"><label for="d-price">가격(원)</label><input id="d-price" name="price" type="number" inputmode="numeric" min="0" step="100" placeholder="예) 89000"></div>'+
+        '<div class="field"><label for="d-cat">분류</label><select id="d-cat" name="category">'+catOpts('')+'</select></div>'+
+      '</div>'+
+      '<div class="field"><label for="d-freq">예상 사용 빈도</label><select id="d-freq" name="freq">'+optHtml(FREQS,'weekly1',o=>o.k,o=>o.label)+'</select></div>'+
+      '<div class="field"><label for="d-motive">구매 동기</label><select id="d-motive" name="motive">'+optHtml(MOTIVES,'need',o=>o.k,o=>o.label)+'</select></div>'+
+      '<div class="field"><label for="d-had">비슷한 제품을 구매한 적이 있나요?</label><select id="d-had" name="had"><option value="no">없음</option><option value="yes">있음</option></select><small>있다면 그 제품의 가격과 실제 사용 빈도를 적어 주세요. 구매 내역에 저장되고 진단에 반영됩니다.</small></div>'+
+      '<div id="d-prior" class="form-col" hidden style="border:1px dashed var(--line);border-radius:10px;padding:14px">'+
+        '<div class="field"><label for="d-pname2">이전에 구매한 제품명 (선택)</label><input id="d-pname2" name="pname2" type="text" maxlength="60" placeholder="비워 두면 위의 제품명으로 저장" autocomplete="off"></div>'+
+        '<div class="two"><div class="field"><label for="d-pprice">그 제품의 가격(원)</label><input id="d-pprice" name="pprice" type="number" inputmode="numeric" min="0" step="100"></div>'+
+        '<div class="field"><label for="d-pdate">구매 시기</label><input id="d-pdate" name="pdate" type="date"></div></div>'+
+        '<div class="field"><label for="d-pfreq">실제 사용 빈도</label><select id="d-pfreq" name="pfreq">'+FREQS.map(o=>'<option value="'+o.k+'"'+(o.k==='weekly1'?' selected':'')+'>'+ACT_LABEL[o.k]+'</option>').join('')+'</select></div>'+
+      '</div>'+
+      '<div class="notice err" id="diag-err" hidden></div>'+
+      '<div class="actions"><button class="btn primary" type="submit">진단하기</button><button class="btn" type="reset" data-action="reset-diag">입력 지우기</button></div>'+
+    '</form></section>'+
+    '<section id="receipt-slot" aria-live="polite"><div class="slot-empty">진단하기를 누르면 이곳에<br>진단 영수증이 출력됩니다.</div></section>'+
+  '</div><div id="more-slot"></div>';
+  if(pf){
+    const f=$('form[data-form="diagnose"]');
+    f.elements.pname.value=pf.name;f.elements.price.value=pf.price;f.elements.category.value=pf.category;
+    f.elements.freq.value=pf.freq;f.elements.motive.value=pf.motive;
+  }
+}
+forms.diagnose=f=>{
+  const err=$('#diag-err');err.hidden=true;
+  const fail=m=>{err.textContent=m;err.hidden=false;};
+  const name=f.elements.pname.value.trim();
+  const price=Math.round(Number(f.elements.price.value));
+  if(!name)return fail('제품명을 입력해 주세요.');
+  if(!(price>0))return fail('가격을 0원보다 큰 숫자로 입력해 주세요.');
+  if(price>100000000)return fail('가격이 너무 큽니다. 다시 확인해 주세요.');
+  let prior=null,savedNote=false;
+  if(f.elements.had.value==='yes'){
+    const pn=f.elements.pname2.value.trim()||name;
+    const pp=Math.round(Number(f.elements.pprice.value));
+    const pdt=f.elements.pdate.value,pfr=f.elements.pfreq.value,cat0=f.elements.category.value;
+    if(!(pp>0))return fail('이전에 구매한 제품의 가격을 0원보다 큰 숫자로 입력해 주세요.');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(pdt))return fail('이전 구매 시기를 선택해 주세요.');
+    if(pdt>ymd(new Date()))return fail('구매 시기는 오늘 이전 날짜로 입력해 주세요.');
+    let rec=state.data.purchases.find(p=>norm(p.name)===norm(pn)&&p.category===cat0&&p.date===pdt&&p.price===pp);
+    if(rec)rec.usage=pfr;
+    else{rec={id:newId(),name:pn,category:cat0,price:pp,date:pdt,feedback:null,usage:pfr};state.data.purchases.push(rec);}
+    ensureOwned(state.data,pn,cat0);
+    saveData();savedNote=true;
+    prior={id:rec.id,name:pn,price:pp,freq:pfr,date:pdt};
+  }
+  const inp={name:name,price:price,category:f.elements.category.value,freq:f.elements.freq.value,motive:f.elements.motive.value,prior:prior};
+  const res=evaluate(inp,state.data,new Date());
+  res.alts=buildAlternatives(inp,res);
+  state.lastResult=res;
+  $('#receipt-slot').innerHTML=receiptHtml(res);
+  $('#more-slot').innerHTML=moreHtml(res);
+  $('#receipt-slot').scrollIntoView({behavior:'smooth',block:'start'});
+  if(savedNote)toast('이전 구매 내역을 구매 내역·보유 물품에 저장하고 진단에 반영했습니다.');
+};
+function receiptHtml(r){
+  const rows=r.items.map(it=>
+    '<tr><td><b>'+it.title+'</b> <span class="muted">(최대 '+it.max+'점)</span><small>'+esc(it.reason)+'</small></td><td class="r-n">'+(it.ded>0?'−'+it.ded:'0')+'</td></tr>').join('');
+  return '<article class="receipt" aria-label="진단 영수증">'+
+    '<div class="r-head"><strong>안티-쇼핑 진단 영수증</strong><span>'+esc(fmtDateTime(r.at))+'</span></div>'+
+    '<div class="r-prod"><b>'+esc(r.input.name)+'</b>'+esc(r.input.category)+' · '+fmtWon(r.input.price)+'</div>'+
+    '<table class="r-table"><caption class="sr">산출 세부 내역표</caption><tbody>'+rows+'</tbody></table>'+
+    '<div class="r-sum"><span>감점 합계</span><b>−'+r.sum+'</b></div>'+
+    '<div class="r-total"><div><span class="lab">구매 적합도</span><b>'+r.total+'</b> / 100</div><div class="stamp '+r.badge.key+'">'+r.badge.label+'</div></div>'+
+  '</article>'+
+  '<div class="verdict '+r.badge.key+'">'+esc(r.verdict)+'</div>';
+}
+function moreHtml(r){
+  const c=r.ctx,k=r.badge.key;
+  const stat=(t,b,s)=>'<div class="stat"><span>'+t+'</span><b>'+b+'</b><small>'+s+'</small></div>';
+  const stats=
+    stat('노동 시간 환산',r.hours!=null?'약 '+r.hours.toFixed(1)+'시간':'미설정',r.hours!=null?'월급 '+fmtWon(c.salary)+' (시급 환산 '+fmtWon(c.hourly)+') 기준':'진단 화면 위쪽에서 월급 입력')+
+    stat('월 예산 대비',c.budget>0?Math.round(r.ratio*100)+'%':'미설정',c.budget>0?'이번 달 지출 포함 '+fmtWon(r.after):'리포트·설정에서 예산 입력')+
+    stat('저축 목표 대비',r.goalPct!=null?r.goalPct.toFixed(1)+'%':'미설정',r.goalPct!=null?esc(c.goalName||'저축 목표')+' '+fmtWon(c.goalAmount):'리포트·설정에서 목표 입력')+
+    stat('1회 사용당 비용','약 '+fmtWon(r.perUse),'1년간 연 '+r.perYear+'회 사용 가정');
+  const alts=r.alts.map((a,i)=>'<div class="alt"><h3>'+(i+1===1?'①':i+1===2?'②':'③')+' '+esc(a.title)+'</h3><p>'+esc(a.text)+'</p></div>').join('');
+  const hint=k==='rec'?'추천 판정입니다. 계획한 구매라면 내역에 기록해 두세요.':k==='think'?'고민 판정입니다. 바로 결정하기보다 쿨링오프 보관을 권장합니다.':'비추천 판정입니다. 구매를 포기하면 아낀 금액이 누적됩니다.';
+  return '<section class="card"><h2>맞춤 조언</h2><ul class="advice">'+r.comments.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></section>'+
+    '<section class="card"><h2>기회비용 환산</h2><div class="stats">'+stats+'</div></section>'+
+    '<section class="card"><details'+(k!=='rec'?' open':'')+'><summary>구매 전 대안 3가지 유형</summary><div class="alts">'+alts+'</div></details></section>'+
+    '<section class="card"><h2>결정하기</h2><p class="muted">'+hint+'</p><div class="decide">'+
+      '<button class="btn'+(k==='rec'?' primary':'')+'" data-action="decide-buy">구매 진행 · 내역에 기록</button>'+
+      '<div class="hold-pick"><label class="sr" for="hold-hours">보관 시간</label><select id="hold-hours"><option value="24">24시간</option><option value="48">48시간</option><option value="72">72시간</option></select>'+
+      '<button class="btn'+(k==='think'?' primary':'')+'" data-action="decide-hold">쿨링오프 보관</button></div>'+
+      '<button class="btn'+(k==='no'?' primary':'')+'" data-action="decide-skip">구매 포기 · 절감 기록</button>'+
+    '</div></section>';
+}
+function finishDecision(title,text){
+  state.lastResult=null;
+  $('#more-slot').innerHTML='<section class="card"><h2>'+esc(title)+'</h2><p style="margin-top:8px">'+esc(text)+'</p><div class="actions" style="margin-top:14px"><button class="btn primary" data-action="new-diag">새 제품 진단하기</button></div></section>';
+  updateHoldCount();
+}
+
+/* ===== 쿨링오프 보관함 ===== */
+function renderHolds(){
+  const d=state.data,now=Date.now();
+  const list=d.holds.slice().sort((a,b)=>a.dueAt-b.dueAt);
+  const saved=d.saved.reduce((a,x)=>a+x.price,0);
+  const items=list.map(h=>{
+    const due=h.dueAt<=now;
+    return '<div class="item'+(due?' due':'')+'"><div><strong>'+esc(h.name)+'</strong> <span class="badge '+esc(h.badge||'think')+'">'+esc(h.badgeLabel||'고민')+'</span>'+
+      '<div class="meta">'+esc(h.category)+' · '+fmtWon(h.price)+' · 진단 점수 '+h.score+'점</div>'+
+      '<div class="meta">'+(due?'<b style="color:var(--think)">기한이 지났습니다. 아직도 필요한가요?</b>':'남은 시간 '+fmtRemain(h.dueAt-now)+' (확인 예정 '+esc(fmtDateTime(h.dueAt))+')')+'</div></div>'+
+      '<div class="rowact">'+(due
+        ?'<button class="btn primary sm" data-action="hold-restart" data-id="'+h.id+'">여전히 필요함 · 다시 진단</button><button class="btn sm" data-action="hold-drop" data-id="'+h.id+'">필요 없어짐 · 구매 포기</button>'
+        :'<button class="btn sm" data-action="hold-demo" data-id="'+h.id+'" title="시연용: 보관 기한을 지금으로 앞당깁니다">시연용 기한 앞당기기</button><button class="btn sm danger" data-action="hold-drop" data-id="'+h.id+'">보관 취소 · 포기</button>')+
+      '</div></div>';
+  }).join('');
+  $('#view').innerHTML=
+  '<div class="page-head"><h1>쿨링오프 보관함</h1><p class="muted">고민되는 물건을 일정 시간 보관한 뒤, 접속했을 때 기한이 지난 항목에 대해 구매 필요성을 다시 확인합니다.</p></div>'+
+  '<section class="card"><div class="head-row"><div><span class="muted">지금까지 아낀 금액</span><div class="big">'+fmtWon(saved)+'</div></div><span class="muted">구매 포기 '+d.saved.length+'건</span></div></section>'+
+  '<section class="card"><h2>보관 중인 물건 ('+list.length+')</h2>'+
+  (list.length?'<div class="list">'+items+'</div>':'<div class="empty">보관 중인 물건이 없습니다. 진단 결과에서 "쿨링오프 보관"을 선택하면 이곳에 표시됩니다.</div>')+'</section>';
+}
+
+/* ===== 내 데이터 ===== */
+function renderData(){
+  const d=state.data;
+  const owned=d.owned.slice().sort((a,b)=>(b.addedAt||0)-(a.addedAt||0));
+  const purch=d.purchases.slice().sort((a,b)=>(a.date<b.date?1:-1));
+  const ownedRows=owned.map(o=>'<tr><td>'+esc(o.name)+'</td><td>'+esc(o.category)+'</td><td><div class="rowact"><button class="btn sm" data-action="edit-owned" data-id="'+o.id+'">수정</button><button class="btn sm danger" data-action="del-owned" data-id="'+o.id+'">삭제</button></div></td></tr>').join('');
+  const purRows=purch.map(p=>'<tr><td>'+esc(p.date)+'</td><td>'+esc(p.name)+'</td><td>'+esc(p.category)+'</td><td class="num">'+fmtWon(p.price)+'</td><td>'+(p.usage&&ACT_LABEL[p.usage]?esc(ACT_LABEL[p.usage]):'<span class="muted">미기록</span>')+'</td>'+
+    '<td><button class="fbtn sat" aria-pressed="'+(p.feedback==='satisfied')+'" data-action="fb" data-id="'+p.id+'" data-val="satisfied">만족</button> '+
+    '<button class="fbtn reg" aria-pressed="'+(p.feedback==='regret')+'" data-action="fb" data-id="'+p.id+'" data-val="regret">후회</button></td>'+
+    '<td><div class="rowact"><button class="btn sm" data-action="edit-purchase" data-id="'+p.id+'">수정</button><button class="btn sm danger" data-action="del-purchase" data-id="'+p.id+'">삭제</button></div></td></tr>').join('');
+  $('#view').innerHTML=
+  '<div class="page-head"><h1>내 데이터</h1><p class="muted">보유 물품과 구매 내역을 직접 추가·수정·삭제할 수 있습니다. 구매 후 만족·후회를 기록하면 이후 진단의 충동성 감점에 반영됩니다.</p></div>'+
+  '<section class="card"><h2>데이터 관리</h2><div class="actions" style="margin-top:12px">'+
+    '<button class="btn" data-action="load-sample">시연용 예시 데이터 불러오기</button>'+
+    '<button class="btn danger" data-action="reset-data">내 데이터 전체 초기화</button></div></section>'+
+  '<section class="card"><div class="head-row"><h2>보유 물품 ('+owned.length+')</h2><button class="btn primary sm" data-action="add-owned">물품 추가</button></div>'+
+    (owned.length?'<div class="table-wrap"><table class="data"><thead><tr><th>물품명</th><th>분류</th><th></th></tr></thead><tbody>'+ownedRows+'</tbody></table></div>':'<div class="empty">등록된 보유 물품이 없습니다.</div>')+'</section>'+
+  '<section class="card"><div class="head-row"><h2>구매 내역 ('+purch.length+')</h2><button class="btn primary sm" data-action="add-purchase">구매 내역 추가</button></div>'+
+    (purch.length?'<div class="table-wrap"><table class="data"><thead><tr><th>구매일</th><th>물품명</th><th>분류</th><th>금액</th><th>실제 사용</th><th>구매 후 평가</th><th></th></tr></thead><tbody>'+purRows+'</tbody></table></div>':'<div class="empty">등록된 구매 내역이 없습니다.</div>')+'</section>';
+}
+function fieldHtml(fl){
+  const id='m-'+fl.name,v=fl.value==null?'':fl.value;
+  const input=fl.type==='select'
+    ?'<select id="'+id+'" name="'+fl.name+'">'+fl.options.map(o=>'<option value="'+esc(o)+'"'+(o===v?' selected':'')+'>'+esc(o)+'</option>').join('')+'</select>'
+    :'<input id="'+id+'" name="'+fl.name+'" type="'+fl.type+'" value="'+esc(v)+'" '+(fl.attrs||'')+'>';
+  return '<div class="field"><label for="'+id+'">'+esc(fl.label)+'</label>'+input+(fl.hint?'<small>'+esc(fl.hint)+'</small>':'')+'</div>';
+}
+function openModal(o){
+  state.modal=o;
+  $('#modal-root').innerHTML='<div class="modal-back" data-action="modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title"><h3 id="m-title">'+esc(o.title)+'</h3>'+
+    '<form data-form="modal" novalidate>'+o.fields.map(fieldHtml).join('')+'<div class="notice err" id="m-err" hidden></div>'+
+    '<div class="actions"><button class="btn" type="button" data-action="modal-close">취소</button><button class="btn primary" type="submit">'+esc(o.submit||'저장')+'</button></div></form></div></div>';
+  const first=$('#modal-root input,#modal-root select');if(first)first.focus();
+}
+function closeModal(){state.modal=null;$('#modal-root').innerHTML='';}
+forms.modal=async f=>{
+  const o=state.modal;if(!o)return;
+  const vals={};o.fields.forEach(fl=>{vals[fl.name]=f.elements[fl.name].value.trim();});
+  const err=await o.onSubmit(vals);
+  if(err){const e=$('#m-err');e.textContent=err;e.hidden=false;return;}
+  closeModal();
+};
+function askConfirm(message,opts){
+  opts=opts||{};
+  return new Promise(resolve=>{
+    state.confirm=resolve;
+    $('#modal-root').innerHTML='<div class="modal-back" data-action="confirm-bg"><div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="c-msg"><p id="c-msg" class="confirm-msg">'+esc(message)+'</p>'+
+      '<div class="actions"><button class="btn" data-action="confirm-cancel">취소</button><button id="c-ok" class="btn '+(opts.danger?'danger solid':'primary')+'" data-action="confirm-ok">'+esc(opts.ok||'확인')+'</button></div></div></div>';
+    $('#c-ok').focus();
+  });
+}
+function resolveConfirm(v){const r=state.confirm;state.confirm=null;$('#modal-root').innerHTML='';if(r)r(v);}
+
+function ownedModal(item){
+  openModal({title:item?'보유 물품 수정':'보유 물품 추가',fields:[
+    {name:'name',label:'물품명',type:'text',value:item?item.name:'',attrs:'maxlength="60"'},
+    {name:'category',label:'분류',type:'select',options:CATEGORIES,value:item?item.category:CATEGORIES[0]}
+  ],onSubmit:v=>{
+    if(!v.name)return '물품명을 입력해 주세요.';
+    if(item){item.name=v.name;item.category=v.category;}
+    else state.data.owned.push({id:newId(),name:v.name,category:v.category,addedAt:Date.now()});
+    saveData();renderData();toast(item?'수정했습니다.':'보유 물품을 추가했습니다.');
+  }});
+}
+function purchaseModal(item){
+  openModal({title:item?'구매 내역 수정':'구매 내역 추가',fields:[
+    {name:'name',label:'물품명',type:'text',value:item?item.name:'',attrs:'maxlength="60"'},
+    {name:'category',label:'분류',type:'select',options:CATEGORIES,value:item?item.category:CATEGORIES[0]},
+    {name:'price',label:'금액(원)',type:'number',value:item?item.price:'',attrs:'min="0" step="100" inputmode="numeric"'},
+    {name:'date',label:'구매일',type:'date',value:item?item.date:ymd(new Date())},
+    {name:'usage',label:'실제 사용 빈도',type:'select',options:USAGE_OPTS,value:item&&item.usage?ACT_LABEL[item.usage]:'미기록',hint:'기록하면 비슷한 제품을 진단할 때 자동으로 반영됩니다.'}
+  ],onSubmit:v=>{
+    const price=Math.round(Number(v.price));
+    if(!v.name)return '물품명을 입력해 주세요.';
+    if(!(price>0))return '금액을 0원보다 큰 숫자로 입력해 주세요.';
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(v.date))return '구매일을 선택해 주세요.';
+    const usage=USAGE_KEY[v.usage]||null;
+    if(item){item.name=v.name;item.category=v.category;item.price=price;item.date=v.date;item.usage=usage;}
+    else state.data.purchases.push({id:newId(),name:v.name,category:v.category,price:price,date:v.date,feedback:null,usage:usage});
+    ensureOwned(state.data,v.name,v.category);
+    saveData();renderData();toast(item?'수정했습니다.':'구매 내역을 추가하고 보유 물품에도 등록했습니다.');
+  }});
+}
+function loadSample(){
+  const d=state.data,now=new Date();
+  const ago=n=>{const x=new Date(now.getFullYear(),now.getMonth(),now.getDate()-n);return ymd(x);};
+  [['무선 이어폰(블루투스)','전자기기'],['후드집업 회색','의류·패션'],['노트북 거치대','전자기기'],['0.5mm 샤프펜슬','문구·학용품'],['수학 문제집','도서·교재'],['흰색 운동화','의류·패션']].forEach(a=>{
+    if(!d.owned.some(o=>norm(o.name)===norm(a[0])&&o.category===a[1]))d.owned.push({id:newId(),name:a[0],category:a[1],addedAt:Date.now()});
+  });
+  [[3,'과자 세트','식품·간식',12000,null],[9,'게임 아이템 패키지','취미·게임',33000,'regret'],[14,'스티커·다이어리 꾸미기 세트','문구·학용품',18000,'regret'],
+   [20,'오버핏 후드티','의류·패션',42000,'satisfied'],[27,'보조배터리','전자기기',25000,'satisfied'],[45,'청바지','의류·패션',39000,'regret']].forEach(a=>{
+    const date=ago(a[0]);
+    if(!d.purchases.some(p=>p.name===a[1]&&p.price===a[3]))d.purchases.push({id:newId(),name:a[1],category:a[2],price:a[3],date:date,feedback:a[4]});
+  });
+  saveData();
+}
+
+/* ===== 소비 리포트·설정 ===== */
+function renderReport(){
+  const d=state.data,s=d.settings,now=new Date();
+  const saved=d.saved.reduce((a,x)=>a+x.price,0);
+  const monthSpent=d.purchases.reduce((a,p)=>{const x=parseYmd(p.date);return(x.getFullYear()===now.getFullYear()&&x.getMonth()===now.getMonth())?a+(+p.price||0):a;},0);
+  const fbS=d.purchases.filter(p=>p.feedback==='satisfied').length,fbR=d.purchases.filter(p=>p.feedback==='regret').length;
+  const goalPct=s.goalAmount>0?Math.min(100,saved/s.goalAmount*100):0;
+  const regRows=CATEGORIES.map(c=>({c:c,st:regretStat(d,c)})).filter(x=>x.st.n>0).map(x=>
+    '<tr><td>'+esc(x.c)+'</td><td class="num">'+x.st.n+'건</td><td class="num">'+x.st.r+'건 ('+Math.round(x.st.rate*100)+'%)</td><td class="num">'+(x.st.add>0?'충동성 +'+x.st.add+'점':'가중 없음')+'</td></tr>').join('');
+  $('#view').innerHTML=
+  '<div class="page-head"><h1>소비 리포트·설정</h1><p class="muted">누적 기록을 확인하고, 진단에 사용되는 기준값을 직접 설정합니다.</p></div>'+
+  '<section class="card"><h2>소비 리포트</h2><div class="stats">'+
+    '<div class="stat"><span>누적 절감액</span><b>'+fmtWon(saved)+'</b><small>구매 포기 '+d.saved.length+'건</small></div>'+
+    '<div class="stat"><span>이번 달 지출</span><b>'+fmtWon(monthSpent)+'</b><small>'+(s.budget>0?'월 예산의 '+Math.round(monthSpent/s.budget*100)+'%':'월 예산 미설정')+'</small></div>'+
+    '<div class="stat"><span>구매 내역</span><b>'+d.purchases.length+'건</b><small>보유 물품 '+d.owned.length+'개</small></div>'+
+    '<div class="stat"><span>구매 후 평가</span><b>만족 '+fbS+' · 후회 '+fbR+'</b><small>'+(fbS+fbR?'후회율 '+Math.round(fbR/(fbS+fbR)*100)+'%':'기록 없음')+'</small></div>'+
+  '</div>'+
+  (s.goalAmount>0?'<div style="margin-top:18px"><strong>'+esc(s.goalName||'저축 목표')+'</strong> <span class="muted">'+fmtWon(saved)+' / '+fmtWon(s.goalAmount)+' ('+goalPct.toFixed(1)+'%)</span><div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+Math.round(goalPct)+'"><i style="width:'+goalPct+'%"></i></div></div>':'<p class="muted" style="margin-top:14px">저축 목표를 설정하면 절감액이 목표 달성률로 표시됩니다.</p>')+
+  '</section>'+
+  '<section class="card"><h2>나의 후회 이력 보정 현황</h2><p class="muted" style="margin-top:4px">구매 후 평가가 쌓인 분류는 진단 시 충동성 감점이 더 커집니다.</p>'+
+    (regRows?'<div class="table-wrap"><table class="data"><thead><tr><th>분류</th><th>평가 기록</th><th>후회</th><th>진단 반영</th></tr></thead><tbody>'+regRows+'</tbody></table></div>':'<div class="empty">아직 구매 후 평가가 없습니다. 내 데이터에서 만족·후회를 기록해 보세요.</div>')+'</section>'+
+  '<section class="card"><h2>진단 기준 설정</h2>'+
+    '<form data-form="settings" class="form-col" novalidate>'+
+      '<div class="field"><label for="s-sens">충동구매 민감도: <span id="s-sens-out">'+s.sensitivity+'단계 ('+SENS_LABEL[s.sensitivity-1]+')</span></label><input id="s-sens" name="sens" type="range" min="1" max="5" step="1" value="'+s.sensitivity+'"><small>충동구매를 자주 한다고 느낄수록 높게 설정하세요. 충동성 감점이 더 엄격해집니다.</small></div>'+
+      '<div class="two"><div class="field"><label for="s-budget">월 소비 예산(원)</label><input id="s-budget" name="budget" type="number" min="0" step="1000" value="'+s.budget+'"></div>'+
+      '<div class="field"><label for="s-salary">내 월급(원)</label><input id="s-salary" name="salary" type="number" min="0" step="10000" value="'+s.salary+'"><small>월 209시간 기준으로 시급이 자동 계산됩니다. 현재 약 '+fmtWon(s.hourly)+'</small></div></div>'+
+      '<div class="two"><div class="field"><label for="s-gname">저축 목표 이름</label><input id="s-gname" name="gname" type="text" maxlength="30" value="'+esc(s.goalName)+'" placeholder="예) 여행 경비"></div>'+
+      '<div class="field"><label for="s-gamt">저축 목표 금액(원)</label><input id="s-gamt" name="gamt" type="number" min="0" step="1000" value="'+s.goalAmount+'"></div></div>'+
+      '<div class="notice err" id="set-err" hidden></div>'+
+      '<div class="actions"><button class="btn primary" type="submit">설정 저장</button></div>'+
+    '</form></section>'+
+  '<section class="card"><h2>계정</h2><p class="muted" style="margin-top:4px">아이디 '+esc(state.user.id)+' · 닉네임 '+esc(state.user.nick)+'</p>'+
+    '<div class="actions" style="margin-top:12px"><button class="btn" data-action="logout">로그아웃</button><button class="btn danger" data-action="delete-account">회원 탈퇴</button></div></section>';
+}
+forms.settings=f=>{
+  const sens=Number(f.elements.sens.value),budget=Math.round(Number(f.elements.budget.value)),salary=Math.round(Number(f.elements.salary.value));
+  const gamt=Math.round(Number(f.elements.gamt.value||0));
+  const e=$('#set-err');e.hidden=true;
+  if([budget,salary,gamt].some(n=>!(n>=0)))return(e.textContent='금액은 0 이상의 숫자로 입력해 주세요.',e.hidden=false);
+  Object.assign(state.data.settings,{sensitivity:sens,budget:budget,salary:salary,hourly:Math.round(salary/209),goalName:f.elements.gname.value.trim(),goalAmount:gamt});
+  saveData();renderReport();toast('설정을 저장했습니다.');
+};
+
+forms.quick=f=>{
+  const salary=Math.round(Number(f.elements.salary.value||0)),budget=Math.round(Number(f.elements.budget.value||0)),gamt=Math.round(Number(f.elements.gamt.value||0));
+  const e=$('#q-err');e.hidden=true;
+  if([salary,budget,gamt].some(n=>!(n>=0)))return(e.textContent='금액은 0 이상의 숫자로 입력해 주세요.',e.hidden=false);
+  Object.assign(state.data.settings,{salary:salary,hourly:Math.round(salary/209),budget:budget,goalName:f.elements.gname.value.trim(),goalAmount:gamt});
+  saveData();renderDiagnose();toast('월급·예산·저축 목표를 저장했습니다.');
+};
+
+/* ===== 동작(이벤트 위임) ===== */
+const actions={
+  'auth-tab':t=>renderAuth(t.dataset.mode),
+  'toggle-pw':t=>{$$('.pw',t.closest('form')).forEach(i=>{i.type=t.checked?'text':'password';});},
+  'nav':t=>showView(t.dataset.view),
+  'logout':async()=>{
+    if(await askConfirm('로그아웃하시겠습니까?')){clearSession();renderAuth('login',{notice:'로그아웃되었습니다.'});}
+  },
+  'reset-diag':()=>{state.lastResult=null;$('#receipt-slot').innerHTML='<div class="slot-empty">진단하기를 누르면 이곳에<br>진단 영수증이 출력됩니다.</div>';$('#more-slot').innerHTML='';},
+  'new-diag':()=>{showView('diagnose');const n=$('#d-name');if(n)n.focus();},
+  'decide-buy':()=>{
+    const r=state.lastResult;if(!r)return;const i=r.input,d=state.data;
+    d.purchases.push({id:newId(),name:i.name,category:i.category,price:i.price,date:ymd(new Date()),feedback:null,score:r.total});
+    if(!d.owned.some(o=>norm(o.name)===norm(i.name)&&o.category===i.category))d.owned.push({id:newId(),name:i.name,category:i.category,addedAt:Date.now()});
+    saveData();
+    finishDecision('구매 내역에 기록했습니다','구매 내역과 보유 물품에 추가했습니다. 구매 후 "내 데이터"에서 만족·후회를 기록하면 이후 진단에 반영됩니다.');
+  },
+  'decide-hold':()=>{
+    const r=state.lastResult;if(!r)return;const i=r.input;
+    const hours=Number($('#hold-hours').value)||24,now=Date.now();
+    state.data.holds.push({id:newId(),name:i.name,category:i.category,price:i.price,freq:i.freq,motive:i.motive,score:r.total,badge:r.badge.key,badgeLabel:r.badge.label,createdAt:now,dueAt:now+hours*3600000});
+    saveData();
+    finishDecision('쿨링오프 보관함에 넣었습니다',hours+'시간 뒤 이 서비스에 접속하면 구매 필요성을 다시 확인합니다.');
+  },
+  'decide-skip':()=>{
+    const r=state.lastResult;if(!r)return;const i=r.input;
+    state.data.saved.push({id:newId(),name:i.name,price:i.price,date:ymd(new Date())});
+    saveData();
+    const total=state.data.saved.reduce((a,x)=>a+x.price,0);
+    finishDecision('구매를 포기했습니다',fmtWon(i.price)+'을(를) 아꼈습니다. 누적 절감액은 '+fmtWon(total)+'입니다.');
+  },
+  'hold-restart':t=>{
+    const d=state.data,h=d.holds.find(x=>x.id===t.dataset.id);if(!h)return;
+    d.holds=d.holds.filter(x=>x.id!==h.id);saveData();
+    state.prefill={name:h.name,price:h.price,category:h.category,freq:h.freq||'weekly1',motive:h.motive||'need'};
+    showView('diagnose');toast('보관함에서 꺼냈습니다. 다시 진단해 보세요.');
+  },
+  'hold-drop':async t=>{
+    const d=state.data,h=d.holds.find(x=>x.id===t.dataset.id);if(!h)return;
+    if(!await askConfirm("'"+h.name+"' 구매를 포기하고 "+fmtWon(h.price)+"을(를) 절감액에 기록할까요?",{ok:'포기하고 기록'}))return;
+    d.holds=d.holds.filter(x=>x.id!==h.id);d.saved.push({id:newId(),name:h.name,price:h.price,date:ymd(new Date())});
+    saveData();renderHolds();updateHoldCount();toast('절감액에 기록했습니다.');
+  },
+  'hold-demo':t=>{
+    const h=state.data.holds.find(x=>x.id===t.dataset.id);if(!h)return;
+    h.dueAt=Date.now();saveData();renderHolds();updateHoldCount();
+  },
+  'add-owned':()=>ownedModal(null),
+  'edit-owned':t=>ownedModal(state.data.owned.find(x=>x.id===t.dataset.id)),
+  'del-owned':async t=>{
+    const o=state.data.owned.find(x=>x.id===t.dataset.id);if(!o)return;
+    if(!await askConfirm("'"+o.name+"'을(를) 보유 물품에서 삭제할까요?",{danger:true,ok:'삭제'}))return;
+    state.data.owned=state.data.owned.filter(x=>x.id!==o.id);saveData();renderData();
+  },
+  'add-purchase':()=>purchaseModal(null),
+  'edit-purchase':t=>purchaseModal(state.data.purchases.find(x=>x.id===t.dataset.id)),
+  'del-purchase':async t=>{
+    const p=state.data.purchases.find(x=>x.id===t.dataset.id);if(!p)return;
+    if(!await askConfirm("'"+p.name+"' 구매 내역을 삭제할까요?",{danger:true,ok:'삭제'}))return;
+    state.data.purchases=state.data.purchases.filter(x=>x.id!==p.id);saveData();renderData();
+  },
+  'fb':t=>{
+    const p=state.data.purchases.find(x=>x.id===t.dataset.id);if(!p)return;
+    p.feedback=(p.feedback===t.dataset.val)?null:t.dataset.val;saveData();renderData();
+  },
+  'load-sample':async()=>{
+    if(!await askConfirm('시연용 예시 데이터(보유 물품 6개, 구매 내역 6건)를 현재 데이터에 추가합니다. 진행할까요?',{ok:'추가'}))return;
+    loadSample();renderData();toast('예시 데이터를 추가했습니다.');
+  },
+  'reset-data':async()=>{
+    if(!await askConfirm('보유 물품, 구매 내역, 쿨링오프 보관함, 절감 기록을 모두 삭제합니다. 설정과 계정은 유지됩니다.\n이 작업은 되돌릴 수 없습니다.',{danger:true,ok:'전체 초기화'}))return;
+    const s=state.data.settings;state.data=defaultData();state.data.settings=s;saveData();renderData();updateHoldCount();toast('데이터를 초기화했습니다.');
+  },
+  'delete-account':()=>{
+    openModal({title:'회원 탈퇴',submit:'탈퇴하기',fields:[{name:'pw',label:'비밀번호를 다시 입력해 주세요',type:'password',value:'',attrs:'autocomplete="current-password"'}],
+    onSubmit:async v=>{
+      const u=state.user;let ok=false;
+      try{ok=(await hashPw(v.pw,u.salt,u.algo))===u.hash;}catch(e){}
+      if(!ok)return '비밀번호가 올바르지 않습니다.';
+      const users=loadUsers();delete users[u.id];saveUsers(users);store.del(DATA_PREFIX+u.id);clearSession();
+      renderAuth('login',{notice:'회원 탈퇴가 완료되었습니다. 계정과 모든 데이터가 삭제되었습니다.'});
+    }});
+  },
+  'modal-close':()=>closeModal(),
+  'modal-bg':(t,e)=>{if(e.target===t)closeModal();},
+  'confirm-ok':()=>resolveConfirm(true),
+  'confirm-cancel':()=>resolveConfirm(false),
+  'confirm-bg':(t,e)=>{if(e.target===t)resolveConfirm(false);}
+};
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-action]');if(!t)return;
+  const h=actions[t.dataset.action];if(h)h(t,e);
+});
+document.addEventListener('submit',e=>{
+  const f=e.target.closest('[data-form]');if(!f)return;
+  e.preventDefault();
+  const h=forms[f.dataset.form];if(!h)return;
+  if(f.dataset.busy)return;
+  f.dataset.busy='1';
+  const btn=f.querySelector('button[type=submit]');if(btn)btn.disabled=true;
+  Promise.resolve().then(()=>h(f)).catch(err=>{
+    try{console.error(err);}catch(_){}
+    if($('#auth-err'))authErr('처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');else toast('처리 중 오류가 발생했습니다.');
+  }).then(()=>{if(document.body.contains(f)){delete f.dataset.busy;if(btn)btn.disabled=false;}});
+});
+document.addEventListener('reset',e=>{setTimeout(()=>{const b=$('#d-prior');if(b)b.hidden=true;},0);});
+document.addEventListener('input',e=>{
+  if(e.target&&e.target.name==='had'){const b=$('#d-prior');if(b)b.hidden=e.target.value!=='yes';}
+  if(e.target&&e.target.name==='sens'){const o=$('#s-sens-out');if(o)o.textContent=e.target.value+'단계 ('+SENS_LABEL[e.target.value-1]+')';}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  if(state.confirm)resolveConfirm(false);else if(state.modal)closeModal();
+});
+setInterval(()=>{
+  if(!state.user)return;
+  updateHoldCount();
+  if(state.view==='holds'&&!state.modal&&!state.confirm)renderHolds();
+},30000);
+
+/* ===== 시작: 로그인 상태가 아니면 로그인 화면만 표시 ===== */
+(async function init(){
+  $('#app').innerHTML='<p style="padding:40px;text-align:center;color:#596579">저장된 계정 정보를 불러오는 중…</p>';
+  await initPersistence();
+  const sid=getSession();
+  if(sid&&loadUsers()[sid])enterApp(sid,false);
+  else{clearSession();renderAuth('login');}
+})();
+
+})();
+</script>
+</body>
+</html>
